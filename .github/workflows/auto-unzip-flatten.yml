@@ -1,0 +1,81 @@
+name: Auto unzip (fast & flatten) and remove zip files
+
+on:
+  push:
+    branches:
+      - main   # ganti kalau branch kamu bukan 'main'
+
+permissions:
+  contents: write
+
+jobs:
+  unzip_job:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Detect, unzip (flatten), and delete ZIP files
+        run: |
+          set -euo pipefail
+          shopt -s nullglob dotglob
+
+          echo "=== FAST PATH: cari *.zip ==="
+          zips=()
+
+          # Fast: hanya file dengan ekstensi .zip (cepat dan umum)
+          while IFS= read -r -d '' f; do
+            zips+=("$f")
+          done < <(find . -maxdepth 10 -type f -name '*.zip' ! -path './.git/*' -print0)
+
+          # OPTIONAL: fallback untuk ZIP tanpa ekstensi (lebih lambat)
+          # Aktif hanya jika tidak ditemukan *.zip
+          if [ ${#zips[@]} -eq 0 ]; then
+            echo "Tidak ada *.zip, fallback cek MIME (mungkin ada ZIP tanpa ekstensi)..."
+            while IFS= read -r -d '' f; do
+              if file --mime-type "$f" | grep -q "application/zip"; then
+                zips+=("$f")
+              fi
+            done < <(find . -maxdepth 5 -type f ! -path './.git/*' -print0)
+          fi
+
+          if [ ${#zips[@]} -eq 0 ]; then
+            echo "Tidak ada file ZIP terdeteksi. Selesai."
+            exit 0
+          fi
+
+          echo "Ditemukan ${#zips[@]} file ZIP. Mulai proses..."
+          for z in "${zips[@]}"; do
+            echo "=== Proses ZIP: $z ==="
+            dir=$(dirname "$z")
+            tempdir=$(mktemp -d)
+
+            # unzip dengan output minim
+            unzip -qo "$z" -d "$tempdir"
+
+            # cek isi level teratas di dalam ZIP
+            entries=( "$tempdir"/* )
+
+            if [ ${#entries[@]} -eq 1 ] && [ -d "${entries[0]}" ]; then
+              echo "ZIP punya satu folder root, flatten isi folder tersebut ke: $dir"
+              # rsync lebih aman & stabil untuk banyak file
+              rsync -a "${entries[0]}/" "$dir/"
+            else
+              echo "ZIP punya banyak item di root, pindahkan semua isi ke: $dir"
+              rsync -a "$tempdir"/ "$dir/"
+            fi
+
+            # cleanup
+            rm -rf "$tempdir"
+            rm -f "$z"
+
+          done
+
+          echo "=== Selesai proses semua ZIP (flatten + hapus zip). ==="
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: fast flatten-unzip and remove zip files"
+          branch: main   # samakan dengan di atas
