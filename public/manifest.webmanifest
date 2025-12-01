@@ -1,6 +1,6 @@
 {
-    "name": "SIAP CUTI",
-    "short_name": "SIAP CUTI",
+    "name": "CUTI DAMKAR",
+    "short_name": "CUTI DAMKAR",
     "description": "Sistem Informasi Approval Cuti",
     "id": "/?source=pwa",
     "start_url": "/",
