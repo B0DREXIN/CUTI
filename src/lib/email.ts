@@ -42,7 +42,7 @@ export async function sendLeaveStatusEmail({ to, name, status, requestTitle, sta
     const formattedEndDate = format(new Date(endDate), "EEEE, d MMMM yyyy", { locale: id });
 
     const { data, error } = await resend.emails.send({
-        from: `SIAP CUTI Admin <${resendFromEmail}>`,
+        from: `CUTI DAMKARAdmin <${resendFromEmail}>`,
         to: [to],
         subject: subject,
         html: `
