@@ -65,7 +65,7 @@ export function ExportButton({ year, className }: ExportButtonProps) {
             utils.book_append_sheet(workbook, worksheet, `Laporan Cuti ${year}`);
             
             // Generate the Excel file and trigger a download
-            writeFile(workbook, `Laporan_Cuti_SIAP_CUTI_${year}.xlsx`);
+            writeFile(workbook, `Laporan_Cuti_ANGGOTA_DAMKAR_${year}.xlsx`);
 
              toast({
                 title: 'Ekspor Berhasil',
