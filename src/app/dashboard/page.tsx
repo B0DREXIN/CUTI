@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { LeaveDonutChart } from "@/components/siap-cuti/leave-donut-chart";
+import { LeaveDonutChart } from "@/components/cuti-damkar/leave-donut-chart";
 import { createClient } from "@/lib/supabase/server";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
